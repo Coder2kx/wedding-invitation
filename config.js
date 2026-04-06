@@ -71,14 +71,13 @@ const CONFIG = {
       gio: "06:30 Sáng",
       diaDiem: "Gia đình nhà Gái",
       diaChi: "SN 1, Ngõ 69, Xã Ô Diên, Hà Nội",
-      banDo: "https://maps.google.com/?q=21.0285,105.8542",
-      // Tiệc nhà gái tổ chức tại điểm khác (không trùng địa chỉ lễ vu quy ở trên)
+      banDo: "https://maps.google.com/?q=21.084594,105.707264",
       tiec: {
-        ten: "Tiệc mừng",
+        ngay: 25,
+        thangNam: "Tháng 04, 2026",
         gio: "17:00 Chiều",
         diaDiem: "Nhà văn hoá Cụm 9",
-        diaChi: "Nhà văn hoá Cụm 9, Xã Ô Diên, Hà Nội",
-        banDo: "https://maps.google.com/?q=21.034,105.801",
+        banDo: "https://maps.app.goo.gl/VJHiJLEnGnYYaTRW7",
       },
     },
     {
@@ -91,9 +90,11 @@ const CONFIG = {
       diaChi: "SN 33, KDC Kim Xuyên 4, Phường Phạm Sư Mạnh, Hải Phòng",
       banDo: "https://maps.google.com/?q=21.009123,106.501478",
       tiec: {
-        ten: "Tiệc mừng",
+        ngay: 26,
+        thangNam: "Tháng 04, 2026",
         gio: "09:00 Sáng",
         diaDiem: "Gia đình nhà Trai",
+        banDo: "https://maps.google.com/?q=21.009123,106.501478",
       },
     },
   ],
@@ -103,29 +104,25 @@ const CONFIG = {
     {
       ngay: "Cuối Thu 2019",
       tieuDe: "Lần Đầu Gặp Gỡ",
-      moTa:
-        "Thời còn là sinh viên, giữa những ca làm thêm vội vã, anh bắt gặp em như bắt gặp một vì sao lạ — bỗng dưng tim rung lên một nhịp chưa từng có, và thế giới nhỏ lại chỉ còn một ánh nhìn.",
+      moTa: "Thời còn là sinh viên, giữa những ca làm thêm vội vã, anh bắt gặp em như bắt gặp một vì sao lạ — bỗng dưng tim rung lên một nhịp chưa từng có, và thế giới nhỏ lại chỉ còn một ánh nhìn.",
       anh: "assets/images/story/story-01.jpg",
     },
     {
       ngay: "Mùa Đông 2019",
       tieuDe: "Hẹn Hò Đầu Tiên",
-      moTa:
-        "Chiều Hồ Tây êm ả, hai đứa ngồi bên tách cà phê còn nóng, kể cho nhau nghe cả những điều chưa từng kể. Gió lướt qua tóc em, và anh biết — từ khoảnh khắc ấy, anh muốn giữ em lại thật lâu.",
+      moTa: "Chiều Hồ Tây êm ả, hai đứa ngồi bên tách cà phê còn nóng, kể cho nhau nghe cả những điều chưa từng kể. Gió lướt qua tóc em, và anh biết — từ khoảnh khắc ấy, anh muốn giữ em lại thật lâu.",
       anh: "assets/images/story/story-02.jpg",
     },
     {
       ngay: "Thời COVID",
       tieuDe: "Chính Thức Yêu Nhau",
-      moTa:
-        "Mùa dịch kéo hai đứa xa cách địa lý, nhưng không xa cách trái tim: đêm nào cũng thức cùng nhau qua màn hình, cười khóc sẻ chia đến tận sáng. Rồi một ngày, hai đứa chính thức nói lời yêu — như thể cả thế giới đang dịu lại để chứng kiến.",
+      moTa: "Mùa dịch kéo hai đứa xa cách địa lý, nhưng không xa cách trái tim: đêm nào cũng thức cùng nhau qua màn hình, cười khóc sẻ chia đến tận sáng. Rồi một ngày, hai đứa chính thức nói lời yêu — như thể cả thế giới đang dịu lại để chứng kiến.",
       anh: "assets/images/story/story-03.jpg",
     },
     {
       ngay: "Cuối Thu 2025",
       tieuDe: "Lời Cầu Hôn",
-      moTa:
-        "Hoàng hôn Nha Trang nhuộm vàng cả bãi cát, sóng vỗ nhẹ như nhịp tim. Anh nắm tay em, nhìn sâu vào mắt em và nói: “Em ơi, anh muốn cùng em đi hết quãng đường còn lại — sáng tối có nhau, già đi cùng nhau. Em đồng ý làm vợ anh nhé?” Em gật đầu trong nước mắt, và thế là trời đất chứng giám cho lời hứa đời mình.",
+      moTa: "Hoàng hôn Nha Trang nhuộm vàng cả bãi cát, sóng vỗ nhẹ như nhịp tim. Anh nắm tay em, nhìn sâu vào mắt em và nói: “Em ơi, anh muốn cùng em đi hết quãng đường còn lại — sáng tối có nhau, già đi cùng nhau. Em đồng ý làm vợ anh nhé?” Em gật đầu trong nước mắt, và thế là trời đất chứng giám cho lời hứa đời mình.",
       anh: "assets/images/story/story-04.jpg",
     },
   ],

@@ -79,6 +79,11 @@ function applyConfig() {
   const evGrid = $('events-grid');
   if (evGrid) {
     const icons = ['&#128141;', '&#128149;', '&#128144;', '&#127881;'];
+    function fmtDate(ngay, thangNam) {
+      const mm = (thangNam.match(/\d{2}/)||[''])[0];
+      const yyyy = (thangNam.match(/\d{4}/)||['2026'])[0];
+      return `<span class="ev-day">${ngay}</span><span class="ev-sep">.</span><span class="ev-month-num">${mm}</span><span class="ev-sep">.</span><span class="ev-year">${yyyy}</span>`;
+    }
     function renderTiecBlock(ev) {
       const t = ev.tiec;
       if (t && typeof t === 'object') {
@@ -87,35 +92,33 @@ function applyConfig() {
         const dc = t.diaChi && String(t.diaChi).trim();
         const map = t.banDo && String(t.banDo).trim();
         if (!gio && !dd && !dc && !map) return '';
-        const title = (t.ten && String(t.ten).trim()) || 'Tiệc mừng';
-        const addrHtml = [dd, dc].filter(Boolean).map((line) => esc(line)).join('<br>');
+        const mapLabel = dd || dc || 'Chỉ đường tiệc';
         return `
-        <div class="ev-tiec-block">
-          <p class="ev-tiec-kicker">Buổi tiệc</p>
-          <h4 class="ev-tiec-title">${esc(title)}</h4>
-          ${gio ? `<p class="ev-tiec-time">${esc(gio)}</p>` : ''}
-          ${addrHtml ? `<p class="ev-addr ev-addr--tiec">${addrHtml}</p>` : ''}
-          ${map ? `<a class="ev-map ev-map--tiec" href="${map}" target="_blank" rel="noopener noreferrer">&#128205; Chỉ đường tiệc</a>` : ''}
+        <div class="ev-tiec">
+          <div class="ev-tiec-label">Tiệc Mừng</div>
+          ${t.ngay ? `<div class="ev-date ev-date--tiec">${fmtDate(t.ngay, t.thangNam || ev.thangNam)}</div>` : ''}
+          ${gio ? `<p class="ev-row">&#128336; ${esc(gio)}</p>` : ''}
+          ${map ? `<a class="ev-row ev-row--link" href="${map}" target="_blank" rel="noopener noreferrer">&#128205; ${esc(mapLabel)}</a>` : ''}
         </div>`;
       }
       const legacyGio = ev.gioTiec && String(ev.gioTiec).trim();
       if (!legacyGio) return '';
-      const legacyTen = (ev.tenTiec && String(ev.tenTiec).trim()) || 'Tiệc mừng';
       return `
-        <div class="ev-tiec-block ev-tiec-block--legacy">
-          <p class="ev-tiec-kicker">Buổi tiệc</p>
-          <h4 class="ev-tiec-title">${esc(legacyTen)}</h4>
-          <p class="ev-tiec-time">${esc(legacyGio)}</p>
+        <div class="ev-tiec">
+          <div class="ev-tiec-label">Tiệc Mừng</div>
+          <p class="ev-row">&#128336; ${esc(legacyGio)}</p>
         </div>`;
     }
     evGrid.innerHTML = C.suKien.map((ev, i) => `
       <div class="ev-card ${i % 2 === 0 ? 'reveal-left' : 'reveal-right'}">
         <div class="ev-icon">${icons[i] || icons[0]}</div>
         <h3>${ev.ten}</h3>
-        <div class="ev-date"><span class="ev-day">${ev.ngay}</span><span>${ev.thangNam}</span></div>
-        <p class="ev-time">${ev.gio}</p>
-        <p class="ev-addr">${ev.diaDiem}<br>${ev.diaChi}</p>
-        <a class="ev-map" href="${ev.banDo}" target="_blank" rel="noopener noreferrer">&#128205; Chỉ đường</a>
+        <div class="ev-date">${fmtDate(ev.ngay, ev.thangNam)}</div>
+        <div class="ev-info">
+          <p class="ev-row">&#128336; ${ev.gio}</p>
+          <a class="ev-row ev-row--link" href="${ev.banDo}" target="_blank" rel="noopener noreferrer">&#128205; ${ev.diaDiem}</a>
+          <p class="ev-row ev-row--addr">${ev.diaChi}</p>
+        </div>
         ${renderTiecBlock(ev)}
       </div>`).join('');
   }

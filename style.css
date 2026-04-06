@@ -508,76 +508,73 @@ section{position:relative;padding:100px 0;overflow:hidden}
 }
 
 /* ===== EVENTS ===== */
-.ev-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:20px}
+#events{background:var(--cream2);padding-bottom:60px;
+  --ev-script:'Dancing Script','Segoe Script',cursive;
+  --ev-sans:'Raleway','Segoe UI',sans-serif;
+}
+#events .sec-pre{font-family:var(--ev-sans)}
+#events .sec-title{font-family:var(--ev-script);font-weight:700}
+.ev-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:24px}
 .ev-card{
-  background:var(--white);border-radius:16px;padding:32px 20px;text-align:center;
-  box-shadow:0 6px 25px var(--sh);
-  border:1px solid var(--gold-l);
+  background:var(--white);border-radius:16px;padding:28px 24px;text-align:center;
+  box-shadow:0 4px 20px var(--sh);
+  border:1px solid rgba(224,196,168,.3);
   position:relative;overflow:hidden;
-  transition:transform .6s cubic-bezier(.22,1,.36,1),box-shadow .6s cubic-bezier(.22,1,.36,1);
+  transition:transform .5s ease,box-shadow .5s ease;
 }
 .ev-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,var(--pri-l),var(--gold),var(--pri-l));
 }
-.ev-card:hover{transform:translateY(-4px);box-shadow:0 12px 35px rgba(199,107,130,.14)}
-.ev-icon{font-size:32px;margin-bottom:8px}
-.ev-card h3{font-family:var(--script);font-size:28px;color:var(--pri);margin-bottom:12px;font-weight:400}
-.ev-date{margin-bottom:6px;display:flex;flex-direction:column;align-items:center;gap:2px}
-.ev-day{
-  font-family:var(--serif);font-size:52px;font-weight:700;color:var(--pri);
-  display:block;line-height:1;
+.ev-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(199,107,130,.12)}
+.ev-icon{font-size:28px;margin-bottom:4px}
+.ev-card h3{font-family:var(--ev-script);font-size:28px;color:var(--pri);margin-bottom:10px;font-weight:600}
+/* -- Ngày dạng 26.04.2026 -- */
+.ev-date{
+  display:flex;align-items:center;justify-content:center;gap:0;
+  margin-bottom:16px;
+  font-family:'Days One',var(--ev-sans),sans-serif;font-size:16px;font-weight:400;color:var(--gold);letter-spacing:2px;
 }
-.ev-date span:last-child{font-family:var(--sans);font-size:12px;color:var(--txt2);letter-spacing:2px}
-.ev-time{
-  font-family:var(--serif);font-size:16px;font-weight:500;color:var(--txt);
-  margin-bottom:12px;padding:6px 0;
-  border-top:1px solid rgba(199,107,130,.1);border-bottom:1px solid rgba(199,107,130,.1);
+.ev-day,.ev-month-num,.ev-year{font:inherit}
+.ev-sep{font:inherit;color:var(--gold);margin:0 6px}
+/* -- Các dòng thông tin -- */
+.ev-info{margin-bottom:4px}
+.ev-row{
+  font-family:var(--ev-sans);font-size:13px;color:var(--txt);
+  padding:6px 0;margin:0;line-height:1.5;
 }
-/* Khối tiệc (cùng thẻ lễ): đủ giờ, địa điểm, địa chỉ, chỉ đường */
-.ev-tiec-block{
-  margin-top:22px;padding-top:20px;
-  border-top:1px dashed rgba(199,107,130,.28);
+.ev-row--link{
+  display:inline-block;padding:8px 20px;border-radius:50px;margin:4px 0;
+  background:linear-gradient(135deg,var(--pri),var(--pri-l));
+  color:var(--white)!important;text-decoration:none;font-size:12px;letter-spacing:.5px;
+  transition:.3s;box-shadow:0 3px 10px rgba(199,107,130,.18);
+}
+.ev-row--link:hover{transform:translateY(-2px);box-shadow:0 5px 16px rgba(199,107,130,.25)}
+.ev-row--addr{font-size:11px;color:var(--txt2);font-style:italic;line-height:1.6}
+/* -- Tiệc mừng -- */
+.ev-tiec{
+  margin-top:16px;padding-top:14px;
+  border-top:1px dashed var(--gold-l);
   text-align:center;
 }
-.ev-tiec-kicker{
-  font-family:var(--sans);font-size:10px;letter-spacing:3px;
-  text-transform:uppercase;color:var(--gold);margin:0 0 6px;
+.ev-tiec-label{
+  font-family:var(--ev-sans);font-size:10px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--gold);margin-bottom:8px;
 }
-.ev-tiec-title{
-  font-family:var(--serif);font-size:19px;font-weight:600;color:var(--pri);
-  margin:0 0 10px;line-height:1.25;
+.ev-tiec .ev-row{font-size:12px}
+.ev-tiec .ev-row--date{font-weight:500;color:var(--pri)}
+.ev-tiec .ev-row--link{
+  background:transparent;color:var(--pri)!important;
+  border:1.5px solid var(--gold-l);box-shadow:none;font-size:11px;
+  padding:6px 16px;
 }
-.ev-tiec-time{
-  font-family:var(--serif);font-size:16px;font-weight:500;color:var(--txt);
-  margin:0 0 12px;padding:8px 12px;
-  border-radius:10px;
-  background:rgba(201,168,76,.1);
-  border:1px solid rgba(201,168,76,.25);
-  display:inline-block;min-width:min(100%,200px);
-}
-.ev-addr--tiec{margin-bottom:14px!important}
-.ev-map--tiec{
-  background:transparent!important;color:var(--pri)!important;
-  border:2px solid var(--gold-l);
-  box-shadow:none!important;
-}
-.ev-map--tiec:hover{
-  background:rgba(201,168,76,.12)!important;
-  box-shadow:0 4px 14px rgba(201,168,76,.2)!important;
-}
-.ev-addr{font-size:12px;color:var(--txt2);line-height:1.7;font-style:italic;margin-bottom:16px}
-.ev-map{
-  display:inline-block;padding:10px 24px;border-radius:50px;
-  background:linear-gradient(135deg,var(--pri),var(--pri-l));
-  color:var(--white);text-decoration:none;font-size:12px;letter-spacing:1px;
-  transition:.3s;box-shadow:0 4px 12px rgba(199,107,130,.2);
-}
-.ev-map:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(199,107,130,.3)}
+.ev-tiec .ev-row--link:hover{background:rgba(201,168,76,.08);box-shadow:0 3px 10px rgba(201,168,76,.15)}
+.ev-date--tiec{margin-bottom:8px;font-size:13px}
 @media(max-width:600px){
   .ev-grid{grid-template-columns:1fr;gap:16px}
-  .ev-card{padding:28px 20px}
-  .ev-day{font-size:44px}
+  .ev-card{padding:24px 20px}
+  .ev-date{font-size:14px}
+  .ev-card h3{font-size:24px}
 }
 
 /* ===== GALLERY ===== */
