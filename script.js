@@ -173,7 +173,7 @@ function applyConfig() {
 }
 
 // ===== OPEN INVITATION =====
-/** Tiếng mở phong bì: fanfare + hợp âm chúc mừng (Web Audio) — schedule sau ctx.resume() */
+/** Tiếng mở phong bì: wedding chime mềm + đuôi vang nhẹ (Web Audio) */
 let envelopeAudioCtx = null;
 
 /** Gọi từ pointerdown trên phong bì: mở khóa AudioContext trước khi click (Safari/iOS) */
@@ -196,70 +196,101 @@ function playEnvelopeOpenSound() {
     const ctx = envelopeAudioCtx;
 
     const scheduleChime = () => {
-      const now = ctx.currentTime + 0.025;
+      const now = ctx.currentTime + 0.02;
       const master = ctx.createGain();
+      const hp = ctx.createBiquadFilter();
       const lp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.setValueAtTime(140, now);
       lp.type = 'lowpass';
-      lp.frequency.setValueAtTime(5200, now);
-      lp.Q.setValueAtTime(0.65, now);
+      lp.frequency.setValueAtTime(7200, now);
+      lp.Q.setValueAtTime(0.7, now);
+
       master.gain.setValueAtTime(0.0001, now);
-      master.gain.linearRampToValueAtTime(0.48, now + 0.07);
-      master.gain.linearRampToValueAtTime(0.0001, now + 1.35);
-      master.connect(lp);
+      master.gain.linearRampToValueAtTime(0.38, now + 0.06);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
+      master.connect(hp);
+      hp.connect(lp);
       lp.connect(ctx.destination);
 
-      /** Nốt đơn: tam giác + hoà âm bậc 2 (sine) — nghe rõ, ấm, kiểu chuông mừng */
-      function note(freq, delay, dur, vel) {
+      // Bell-like note: sine + overtone, decay dài kiểu chuông cưới.
+      function bell(freq, delay, dur, vel) {
         const t0 = now + delay;
-        const o1 = ctx.createOscillator();
-        o1.type = 'triangle';
-        o1.frequency.setValueAtTime(freq, t0);
-        const o2 = ctx.createOscillator();
-        o2.type = 'sine';
-        o2.frequency.setValueAtTime(freq * 2, t0);
+        const fundamental = ctx.createOscillator();
+        const overtone = ctx.createOscillator();
+        fundamental.type = 'sine';
+        overtone.type = 'triangle';
+        fundamental.frequency.setValueAtTime(freq, t0);
+        overtone.frequency.setValueAtTime(freq * 2.01, t0);
+
         const g1 = ctx.createGain();
         const g2 = ctx.createGain();
-        const att = 0.048;
         g1.gain.setValueAtTime(0.0001, t0);
-        g1.gain.linearRampToValueAtTime(vel, t0 + att);
-        g1.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+        g1.gain.linearRampToValueAtTime(vel, t0 + 0.03);
+        g1.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
         g2.gain.setValueAtTime(0.0001, t0);
-        g2.gain.linearRampToValueAtTime(vel * 0.42, t0 + att);
-        g2.gain.linearRampToValueAtTime(0.0001, t0 + dur);
-        o1.connect(g1);
-        o2.connect(g2);
+        g2.gain.linearRampToValueAtTime(vel * 0.28, t0 + 0.02);
+        g2.gain.exponentialRampToValueAtTime(0.0001, t0 + dur * 0.75);
+
+        // Vibrato nhẹ để tiếng ngân tự nhiên hơn.
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(5.5, t0);
+        lfoGain.gain.setValueAtTime(2.2, t0);
+        lfo.connect(lfoGain);
+        lfoGain.connect(fundamental.frequency);
+
+        // Echo nhỏ tạo cảm giác "sảnh cưới".
+        const delayNode = ctx.createDelay();
+        const delayGain = ctx.createGain();
+        delayNode.delayTime.setValueAtTime(0.18, t0);
+        delayGain.gain.setValueAtTime(0.14, t0);
+
+        fundamental.connect(g1);
+        overtone.connect(g2);
         g1.connect(master);
         g2.connect(master);
-        o1.start(t0);
-        o2.start(t0);
-        o1.stop(t0 + dur + 0.05);
-        o2.stop(t0 + dur + 0.05);
+        g1.connect(delayNode);
+        delayNode.connect(delayGain);
+        delayGain.connect(master);
+
+        fundamental.start(t0);
+        overtone.start(t0);
+        lfo.start(t0);
+        fundamental.stop(t0 + dur + 0.05);
+        overtone.stop(t0 + dur + 0.05);
+        lfo.stop(t0 + dur + 0.05);
       }
 
-      /** Hợp âm C major — “chúc mừng” kết */
-      function chord(freqs, delay, dur, vel) {
+      function fanfare(freq, delay, dur, vel) {
         const t0 = now + delay;
-        freqs.forEach((freq) => {
-          const o = ctx.createOscillator();
-          o.type = 'triangle';
-          o.frequency.setValueAtTime(freq, t0);
-          const g = ctx.createGain();
-          g.gain.setValueAtTime(0.0001, t0);
-          g.gain.linearRampToValueAtTime(vel, t0 + 0.065);
-          g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
-          o.connect(g);
-          g.connect(master);
-          o.start(t0);
-          o.stop(t0 + dur + 0.06);
-        });
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.linearRampToValueAtTime(vel, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        const band = ctx.createBiquadFilter();
+        band.type = 'bandpass';
+        band.frequency.setValueAtTime(1400, t0);
+        band.Q.setValueAtTime(1.1, t0);
+        osc.connect(gain);
+        gain.connect(band);
+        band.connect(master);
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.04);
       }
 
-      /* Fanfare đám cưới: C5–E5–G5–C6 rồi hợp âm C (đồng điệu trưởng) */
-      note(523.25, 0, 0.18, 0.24);
-      note(659.25, 0.15, 0.18, 0.24);
-      note(783.99, 0.3, 0.18, 0.24);
-      note(1046.5, 0.45, 0.26, 0.26);
-      chord([261.63, 329.63, 392.0], 0.78, 0.52, 0.16);
+      // Wedding cue: fanfare mở đầu + chuông trưởng rõ "chúc mừng".
+      fanfare(523.25, 0.00, 0.16, 0.16);
+      fanfare(659.25, 0.14, 0.16, 0.16);
+      fanfare(783.99, 0.28, 0.20, 0.17);
+      bell(1046.5, 0.38, 0.95, 0.22);
+      bell(1318.51, 0.52, 0.95, 0.19);
+      bell(1567.98, 0.68, 1.10, 0.17);
+      bell(2093.0, 0.86, 1.25, 0.14);
     };
 
     const wake = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
@@ -360,10 +391,12 @@ function burstMusicNotes() {
 
 // ===== MUSIC =====
 let playing = false;
+const BG_MUSIC_DEFAULT_VOLUME = 0.5;
 
 function tryPlayMusic() {
   const audio = document.getElementById('bg-music');
   if (!audio.src && !audio.querySelector('source')) return;
+  audio.volume = BG_MUSIC_DEFAULT_VOLUME;
   audio.play().then(() => {
     playing = true;
     document.getElementById('music-btn').classList.add('playing');
@@ -608,8 +641,6 @@ function showLightboxImage(src, alt = '') {
   lbImg.alt = alt;
   lb.classList.add('active');
   document.body.style.overflow = 'hidden';
-  const audio = document.getElementById('bg-music');
-  if (playing && audio) audio.volume = 0.3;
 }
 
 function openLightbox(el) {
@@ -626,8 +657,6 @@ function openQrLightbox(imgEl) {
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('active');
   document.body.style.overflow = 'auto';
-  const audio = document.getElementById('bg-music');
-  if (playing && audio) audio.volume = 1;
   if (wasScrollingBeforeLightbox) {
     setTimeout(() => startAutoScroll(), 300);
   }
@@ -904,14 +933,40 @@ function initFloatWishes() {
 // ===== AUTO SCROLL =====
 let autoScrollRunning = false;
 let autoScrollId = null;
+let autoScrollInitDone = false;
+let autoWakeLock = null;
 /** px mỗi frame (~60fps). Thấp = cuộn chậm, dễ xem ảnh / đọc chữ */
 const AUTO_SPEED = 1;
+
+async function requestAutoWakeLock() {
+  try {
+    if (!('wakeLock' in navigator)) return;
+    if (autoWakeLock) return;
+    autoWakeLock = await navigator.wakeLock.request('screen');
+    autoWakeLock.addEventListener('release', () => {
+      autoWakeLock = null;
+    });
+  } catch (e) {
+    /* ignore */
+  }
+}
+
+function releaseAutoWakeLock() {
+  try {
+    if (autoWakeLock) autoWakeLock.release();
+  } catch (e) {
+    /* ignore */
+  } finally {
+    autoWakeLock = null;
+  }
+}
 
 function startAutoScroll() {
   if (autoScrollId) { cancelAnimationFrame(autoScrollId); autoScrollId = null; }
   const btn = document.getElementById('scroll-btn');
   autoScrollRunning = true;
   if (btn) btn.classList.add('scrolling');
+  requestAutoWakeLock();
 
   function tick() {
     if (!autoScrollRunning) return;
@@ -931,6 +986,7 @@ function pauseAutoScroll() {
   if (autoScrollId) { cancelAnimationFrame(autoScrollId); autoScrollId = null; }
   const btn = document.getElementById('scroll-btn');
   if (btn) btn.classList.remove('scrolling');
+  releaseAutoWakeLock();
 }
 
 function replayScroll() {
@@ -966,9 +1022,15 @@ function initAutoScroll() {
   if (btn) btn.classList.remove('hide');
 
   startAutoScroll();
+  if (autoScrollInitDone) return;
+  autoScrollInitDone = true;
 
   // Chờ 3s rồi mới lắng nghe user input — tránh bắt click mở thiệp
   setTimeout(() => {
+    const stopOnManualTouch = function() {
+      if (autoScrollRunning) pauseAutoScroll();
+    };
+
     window.addEventListener('click', function(e) {
       if (e.target.closest('.bottom-bar,.scroll-toggle,.fw-input-bar,#lightbox,.lb-close,.gift-popup,.wish-popup,.gal-item,.fw-list,.fw-item,.fw-bubble,#music-btn')) return;
       if (!e.isTrusted) return;
@@ -982,7 +1044,18 @@ function initAutoScroll() {
     window.addEventListener('wheel', function() {
       if (autoScrollRunning) pauseAutoScroll();
     }, { passive: true });
+
+    // Mobile: vừa vuốt vừa auto-scroll sẽ gây cảm giác khựng, nên dừng ngay khi chạm.
+    window.addEventListener('touchstart', stopOnManualTouch, { passive: true });
+    window.addEventListener('touchmove', stopOnManualTouch, { passive: true });
+    window.addEventListener('pointerdown', stopOnManualTouch, { passive: true });
   }, 3000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && autoScrollRunning) {
+      requestAutoWakeLock();
+    }
+  });
 }
 
 // ===== VIDEO FALLBACK + viewport autoplay (muted, không trùng nhạc nền) =====
