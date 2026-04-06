@@ -136,9 +136,18 @@ function applyConfig() {
         <h3>${p.hoTen}</h3>
         <p class="gift-bank">${p.nganHang}</p>
         <p class="gift-num">${p.soTaiKhoan}</p>
-        <img class="gift-qr" src="${p.qr}" alt="QR ${p.vaiTro}">
+        <img class="gift-qr" src="${p.qr}" alt="QR ${p.vaiTro}" onclick="event.stopPropagation(); openQrLightbox(this)">
         <button class="copy-btn" onclick="copyBank('${p.soTaiKhoanCopy}',this)">Sao chép STK</button>
       </div>`).join('');
+
+    // Event delegation để đảm bảo bấm QR luôn mở lightbox
+    giftPopupGrid.addEventListener('click', e => {
+      const qrImg = e.target.closest('.gift-qr');
+      if (!qrImg) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openQrLightbox(qrImg);
+    });
   }
 
   // RSVP event select
@@ -589,17 +598,29 @@ function initNavDots() {
 // ===== LIGHTBOX =====
 let wasScrollingBeforeLightbox = false;
 
-function openLightbox(el) {
+function showLightboxImage(src, alt = '') {
   const lb = document.getElementById('lightbox');
-  const img = el.querySelector('img');
-  if (!img) return;
+  const lbImg = document.getElementById('lb-img');
+  if (!lb || !lbImg || !src) return;
   wasScrollingBeforeLightbox = autoScrollRunning;
   if (autoScrollRunning) pauseAutoScroll();
-  document.getElementById('lb-img').src = img.src;
+  lbImg.src = src;
+  lbImg.alt = alt;
   lb.classList.add('active');
   document.body.style.overflow = 'hidden';
   const audio = document.getElementById('bg-music');
   if (playing && audio) audio.volume = 0.3;
+}
+
+function openLightbox(el) {
+  const img = el.querySelector('img');
+  if (!img) return;
+  showLightboxImage(img.src, img.alt || '');
+}
+
+function openQrLightbox(imgEl) {
+  if (!imgEl) return;
+  showLightboxImage(imgEl.src, imgEl.alt || 'QR');
 }
 
 function closeLightbox() {

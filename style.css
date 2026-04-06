@@ -722,7 +722,7 @@ section{position:relative;padding:100px 0;overflow:hidden}
 .gift-card h3{font-family:var(--serif);font-size:14px;color:var(--pri);margin-bottom:2px}
 .gift-bank{font-family:var(--sans);font-size:9px;letter-spacing:1px;color:var(--txt2);text-transform:uppercase}
 .gift-num{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--txt);letter-spacing:2px;margin:4px 0 8px}
-.gift-qr{width:90px;height:90px;margin:0 auto 8px;border-radius:6px;border:1px solid var(--gold-l);display:block}
+.gift-qr{width:90px;height:90px;margin:0 auto 8px;border-radius:6px;border:1px solid var(--gold-l);display:block;cursor:zoom-in}
 .copy-btn{background:var(--gold);border:none;color:var(--white);padding:7px 16px;border-radius:50px;cursor:pointer;font-size:11px;letter-spacing:1px;transition:.3s}
 .copy-btn:hover{background:var(--pri)}.copy-btn.ok{background:#27ae60}
 
@@ -814,14 +814,18 @@ section{position:relative;padding:100px 0;overflow:hidden}
 
 /* ===== LIGHTBOX ===== */
 #lightbox{
-  position:fixed;inset:0;z-index:10000;
+  position:fixed;inset:0;z-index:20000;
   background:rgba(0,0,0,.92);backdrop-filter:blur(8px);
   display:flex;align-items:center;justify-content:center;
   opacity:0;visibility:hidden;
+  pointer-events:none;
   transition:opacity .4s ease,visibility .4s ease;
   cursor:pointer;
 }
-#lightbox.active{opacity:1;visibility:visible}
+#lightbox.active{
+  opacity:1;visibility:visible;
+  pointer-events:auto;
+}
 #lightbox img{
   max-width:90vw;max-height:85vh;border-radius:8px;
   box-shadow:0 20px 60px rgba(0,0,0,.5);
