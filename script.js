@@ -127,8 +127,8 @@ function applyConfig() {
   const giftPopupGrid = $('gift-popup-grid');
   if (giftPopupGrid) {
     const people = [
-      { ...G, img: 'assets/images/couple/groom.JPG', qr: 'assets/qr/qr-groom.png' },
-      { ...B, img: 'assets/images/couple/bride.JPG', qr: 'assets/qr/qr-bride.png' },
+      { ...G, img: 'assets/images/couple/groom.jpg', qr: 'assets/qr/qr-groom.png' },
+      { ...B, img: 'assets/images/couple/bride.jpg', qr: 'assets/qr/qr-bride.png' },
     ];
     giftPopupGrid.innerHTML = people.map(p => `
       <div class="gift-card">
