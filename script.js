@@ -693,8 +693,12 @@ function submitRSVP(e) {
 function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
 // ===== GIFT POPUP =====
+let wasScrollingBeforeGiftPopup = false;
+
 function openGiftPopup() {
   const popup = document.getElementById('gift-popup');
+  wasScrollingBeforeGiftPopup = autoScrollRunning;
+  if (autoScrollRunning) pauseAutoScroll({ releaseWakeLock: false });
   popup.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
@@ -703,6 +707,10 @@ function closeGiftPopup(e) {
   const popup = document.getElementById('gift-popup');
   popup.classList.remove('active');
   document.body.style.overflow = 'auto';
+  if (wasScrollingBeforeGiftPopup) {
+    setTimeout(() => startAutoScroll(), 200);
+  }
+  wasScrollingBeforeGiftPopup = false;
 }
 
 // ===== COPY BANK =====
@@ -935,6 +943,7 @@ let autoScrollRunning = false;
 let autoScrollId = null;
 let autoScrollInitDone = false;
 let autoWakeLock = null;
+let keepAutoWakeLock = false;
 /** px mỗi frame (~60fps). Thấp = cuộn chậm, dễ xem ảnh / đọc chữ */
 const AUTO_SPEED = 1;
 
@@ -965,6 +974,7 @@ function startAutoScroll() {
   if (autoScrollId) { cancelAnimationFrame(autoScrollId); autoScrollId = null; }
   const btn = document.getElementById('scroll-btn');
   autoScrollRunning = true;
+  keepAutoWakeLock = true;
   if (btn) btn.classList.add('scrolling');
   requestAutoWakeLock();
 
@@ -972,7 +982,8 @@ function startAutoScroll() {
     if (!autoScrollRunning) return;
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
     if (maxScroll <= 0 || window.scrollY >= maxScroll - 2) {
-      pauseAutoScroll();
+      // Chạm đáy: dừng cuộn nhưng giữ wake lock để tránh tắt màn hình.
+      pauseAutoScroll({ releaseWakeLock: false });
       return;
     }
     window.scrollBy(0, AUTO_SPEED);
@@ -981,12 +992,16 @@ function startAutoScroll() {
   autoScrollId = requestAnimationFrame(tick);
 }
 
-function pauseAutoScroll() {
+function pauseAutoScroll(options = {}) {
+  const { releaseWakeLock = true } = options;
   autoScrollRunning = false;
   if (autoScrollId) { cancelAnimationFrame(autoScrollId); autoScrollId = null; }
   const btn = document.getElementById('scroll-btn');
   if (btn) btn.classList.remove('scrolling');
-  releaseAutoWakeLock();
+  if (releaseWakeLock) {
+    keepAutoWakeLock = false;
+    releaseAutoWakeLock();
+  }
 }
 
 function replayScroll() {
@@ -1027,7 +1042,10 @@ function initAutoScroll() {
 
   // Chờ 3s rồi mới lắng nghe user input — tránh bắt click mở thiệp
   setTimeout(() => {
-    const stopOnManualTouch = function() {
+    const stopOnManualTouch = function(e) {
+      if (e && e.target && e.target.closest('.bottom-bar,.scroll-toggle,.fw-input-bar,#lightbox,.lb-close,.gift-popup,.wish-popup,.gal-item,.fw-list,.fw-item,.fw-bubble,#music-btn')) {
+        return;
+      }
       if (autoScrollRunning) pauseAutoScroll();
     };
 
@@ -1051,11 +1069,6 @@ function initAutoScroll() {
     window.addEventListener('pointerdown', stopOnManualTouch, { passive: true });
   }, 3000);
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && autoScrollRunning) {
-      requestAutoWakeLock();
-    }
-  });
 }
 
 // ===== VIDEO FALLBACK + viewport autoplay (muted, không trùng nhạc nền) =====
@@ -1064,6 +1077,25 @@ function initVideoFallback() {
   const container = document.getElementById('video-container');
   const fallback = document.getElementById('video-fallback');
   if (!video || !container || !fallback) return;
+  // Cố định chế độ inline trên mobile Safari/Android WebView.
+  video.muted = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', 'true');
+  video.setAttribute('x5-playsinline', 'true');
+  video.setAttribute('x5-video-player-type', 'h5');
+  video.setAttribute('x5-video-player-fullscreen', 'false');
+
+  // iOS đôi khi vào fullscreen khi user bấm play; ép quay về inline.
+  video.addEventListener('webkitbeginfullscreen', () => {
+    try { if (video.webkitExitFullscreen) video.webkitExitFullscreen(); } catch (e) { /* ignore */ }
+  });
+
+  video.addEventListener('play', () => {
+    try { if (video.webkitDisplayingFullscreen && video.webkitExitFullscreen) video.webkitExitFullscreen(); } catch (e) { /* ignore */ }
+  });
+
   video.addEventListener('error', function() {
     container.classList.add('hide');
     fallback.classList.remove('hide');
@@ -1093,6 +1125,14 @@ function initVideoFallback() {
     io.observe(container);
   }
 }
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    releaseAutoWakeLock();
+    return;
+  }
+  if (keepAutoWakeLock) requestAutoWakeLock();
+});
 
 // ===== INIT =====
 document.body.style.overflow = 'hidden';
