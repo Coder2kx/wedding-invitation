@@ -630,6 +630,22 @@ function initNavDots() {
 
 // ===== LIGHTBOX =====
 let wasScrollingBeforeLightbox = false;
+let autoScrollResumeTimer = null;
+
+function clearAutoScrollResumeTimer() {
+  if (autoScrollResumeTimer) {
+    clearTimeout(autoScrollResumeTimer);
+    autoScrollResumeTimer = null;
+  }
+}
+
+function scheduleAutoScrollResume(delayMs = 250) {
+  clearAutoScrollResumeTimer();
+  autoScrollResumeTimer = setTimeout(() => {
+    autoScrollResumeTimer = null;
+    startAutoScroll();
+  }, delayMs);
+}
 
 function showLightboxImage(src, alt = '') {
   const lb = document.getElementById('lightbox');
@@ -658,7 +674,7 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('active');
   document.body.style.overflow = 'auto';
   if (wasScrollingBeforeLightbox) {
-    setTimeout(() => startAutoScroll(), 300);
+    scheduleAutoScrollResume(300);
   }
 }
 
@@ -708,7 +724,7 @@ function closeGiftPopup(e) {
   popup.classList.remove('active');
   document.body.style.overflow = 'auto';
   if (wasScrollingBeforeGiftPopup) {
-    setTimeout(() => startAutoScroll(), 200);
+    scheduleAutoScrollResume(200);
   }
   wasScrollingBeforeGiftPopup = false;
 }
@@ -944,6 +960,9 @@ let autoScrollId = null;
 let autoScrollInitDone = false;
 let autoWakeLock = null;
 let keepAutoWakeLock = false;
+let replayScrollTimer = null;
+let ignoreManualStopUntil = 0;
+let lastTouchPauseAt = 0;
 /** px mỗi frame (~60fps). Thấp = cuộn chậm, dễ xem ảnh / đọc chữ */
 const AUTO_SPEED = 1;
 
@@ -970,7 +989,16 @@ function releaseAutoWakeLock() {
   }
 }
 
+function clearReplayScrollTimer() {
+  if (replayScrollTimer) {
+    clearTimeout(replayScrollTimer);
+    replayScrollTimer = null;
+  }
+}
+
 function startAutoScroll() {
+  clearReplayScrollTimer();
+  clearAutoScrollResumeTimer();
   if (autoScrollId) { cancelAnimationFrame(autoScrollId); autoScrollId = null; }
   const btn = document.getElementById('scroll-btn');
   autoScrollRunning = true;
@@ -994,6 +1022,8 @@ function startAutoScroll() {
 
 function pauseAutoScroll(options = {}) {
   const { releaseWakeLock = true } = options;
+  clearReplayScrollTimer();
+  clearAutoScrollResumeTimer();
   autoScrollRunning = false;
   if (autoScrollId) { cancelAnimationFrame(autoScrollId); autoScrollId = null; }
   const btn = document.getElementById('scroll-btn');
@@ -1005,10 +1035,14 @@ function pauseAutoScroll(options = {}) {
 }
 
 function replayScroll() {
+  clearReplayScrollTimer();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   const topBtn = document.querySelector('.bb-top');
   if (topBtn) topBtn.classList.remove('visible');
-  setTimeout(() => startAutoScroll(), 1000);
+  replayScrollTimer = setTimeout(() => {
+    replayScrollTimer = null;
+    startAutoScroll();
+  }, 1000);
 }
 
 function initBackToTop() {
@@ -1028,8 +1062,24 @@ function toggleAutoScroll() {
   if (autoScrollRunning) {
     pauseAutoScroll();
   } else {
+    // Mobile thường phát sinh touchmove nhỏ ngay sau tap nút; bỏ qua để không pause tức thì.
+    ignoreManualStopUntil = Date.now() + 700;
+    clearReplayScrollTimer();
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    // Nút scroll phải luôn phản hồi ngay: ở đáy thì nhảy về đầu và chạy tiếp.
+    if (maxScroll > 0 && window.scrollY >= maxScroll - 2) {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
     startAutoScroll();
   }
+}
+
+function onScrollButtonTap(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  toggleAutoScroll();
 }
 
 function initAutoScroll() {
@@ -1039,35 +1089,40 @@ function initAutoScroll() {
   startAutoScroll();
   if (autoScrollInitDone) return;
   autoScrollInitDone = true;
+  // Lắng nghe ngay để người dùng dừng/chạy mượt, không phải chờ thêm.
+  const stopOnManualTouch = function(e) {
+    if (Date.now() < ignoreManualStopUntil) return;
+    if (e && e.target && e.target.closest('.bottom-bar,.scroll-toggle,.fw-input-bar,#lightbox,.lb-close,.gift-popup,.wish-popup,.gal-item,.fw-list,.fw-item,.fw-bubble,#music-btn')) {
+      return;
+    }
+    if (autoScrollRunning) {
+      pauseAutoScroll();
+      lastTouchPauseAt = Date.now();
+    }
+  };
 
-  // Chờ 3s rồi mới lắng nghe user input — tránh bắt click mở thiệp
-  setTimeout(() => {
-    const stopOnManualTouch = function(e) {
-      if (e && e.target && e.target.closest('.bottom-bar,.scroll-toggle,.fw-input-bar,#lightbox,.lb-close,.gift-popup,.wish-popup,.gal-item,.fw-list,.fw-item,.fw-bubble,#music-btn')) {
-        return;
-      }
-      if (autoScrollRunning) pauseAutoScroll();
-    };
+  window.addEventListener('click', function(e) {
+    if (Date.now() < ignoreManualStopUntil) return;
+    if (e.target.closest('.bottom-bar,.scroll-toggle,.fw-input-bar,#lightbox,.lb-close,.gift-popup,.wish-popup,.gal-item,.fw-list,.fw-item,.fw-bubble,#music-btn')) return;
+    if (!e.isTrusted) return;
+    // Bỏ qua click "đi kèm" ngay sau touch vừa pause (mobile tap sequence).
+    if (Date.now() - lastTouchPauseAt < 450) return;
+    // Chạm màn hình để toggle auto-scroll (không cần bấm nút).
+    if (autoScrollRunning) {
+      pauseAutoScroll();
+    } else {
+      startAutoScroll();
+    }
+  });
 
-    window.addEventListener('click', function(e) {
-      if (e.target.closest('.bottom-bar,.scroll-toggle,.fw-input-bar,#lightbox,.lb-close,.gift-popup,.wish-popup,.gal-item,.fw-list,.fw-item,.fw-bubble,#music-btn')) return;
-      if (!e.isTrusted) return;
-      if (autoScrollRunning) {
-        pauseAutoScroll();
-      } else {
-        startAutoScroll();
-      }
-    });
+  window.addEventListener('wheel', function() {
+    if (autoScrollRunning) pauseAutoScroll();
+  }, { passive: true });
 
-    window.addEventListener('wheel', function() {
-      if (autoScrollRunning) pauseAutoScroll();
-    }, { passive: true });
-
-    // Mobile: vừa vuốt vừa auto-scroll sẽ gây cảm giác khựng, nên dừng ngay khi chạm.
-    window.addEventListener('touchstart', stopOnManualTouch, { passive: true });
-    window.addEventListener('touchmove', stopOnManualTouch, { passive: true });
-    window.addEventListener('pointerdown', stopOnManualTouch, { passive: true });
-  }, 3000);
+  // Mobile: vừa vuốt vừa auto-scroll sẽ gây cảm giác khựng, nên dừng ngay khi chạm.
+  window.addEventListener('touchstart', stopOnManualTouch, { passive: true });
+  window.addEventListener('touchmove', stopOnManualTouch, { passive: true });
+  window.addEventListener('pointerdown', stopOnManualTouch, { passive: true });
 
 }
 

@@ -407,7 +407,7 @@ section{position:relative;padding:100px 0;overflow:hidden}
   flex-direction:column;
   align-items:center;
 }
-.inv-family h3{font-family:var(--sans);font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.inv-family h3{font-family:var(--body);font-size:12px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
 .inv-family p{font-size:14px;color:var(--txt2);margin-bottom:4px;line-height:1.6;max-width:100%}
 .inv-announce{font-style:italic;font-size:13px!important;margin-top:12px!important;color:var(--txt2)!important}
 .inv-family p.inv-child{font-family:var(--script);font-size:clamp(30px,5.6vw,30px);color:var(--pri);margin-top:4px!important;line-height:1.12}
