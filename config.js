@@ -92,7 +92,7 @@ const CONFIG = {
       tiec: {
         ngay: 26,
         thangNam: "Tháng 04, 2026",
-        gio: "09:00 Sáng",
+        gio: "11:45 Sáng",
         diaDiem: "Gia đình nhà Trai",
         banDo: "https://maps.google.com/?q=21.009123,106.501478",
       },

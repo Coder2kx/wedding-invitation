@@ -426,7 +426,7 @@ function startCountdown() {
 
   function setNum(id, val) {
     const el = document.getElementById(id);
-    const str = String(val).padStart(id === 'c-d' ? 3 : 2, '0');
+    const str = id === 'c-d' ? String(val) : String(val).padStart(2, '0');
     if (el.textContent !== str) {
       el.style.transform = 'scale(.85)';
       el.style.opacity = '.4';
@@ -582,7 +582,8 @@ function initReveal() {
         galObs.unobserve(el);
       }
     });
-  }, { threshold: .1, rootMargin: '0px 0px -60px 0px' });
+  // Lùi mép dưới viewport: ảnh bật hiệu ứng khi đã vào khung an toàn, tránh cảm giác trượt từ sát đáy màn hình
+  }, { threshold: .08, rootMargin: '0px 0px -22% 0px' });
   document.querySelectorAll('.gal-item').forEach(el => galObs.observe(el));
 
   const tlLine = document.querySelector('.tl-line');
