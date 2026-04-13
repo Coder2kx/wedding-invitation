@@ -580,7 +580,7 @@ section{position:relative;padding:100px 0;overflow:hidden}
 
 /* ===== GALLERY ===== */
 #gallery{background:var(--cream2);padding-bottom:max(140px, 18vh)}
-.gal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px;margin-bottom:32px}
+.gal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:20px;margin-bottom:32px}
 .gal-item{
   border-radius:10px;overflow:hidden;cursor:pointer;
   border:2px solid var(--gold-l);
@@ -605,6 +605,15 @@ section{position:relative;padding:100px 0;overflow:hidden}
 .gal-item:hover img{transform:scale(1.06)}
 .gal-wide{grid-column:span 2}
 .gal-wide img{aspect-ratio:16/10}
+/* Nhịp lặp: 1 ảnh -> 2 ảnh -> 1 ảnh -> 2 ảnh */
+.gal-grid .gal-item:nth-child(6n + 1),
+.gal-grid .gal-item:nth-child(6n + 4){grid-column:span 2}
+.gal-grid .gal-item:nth-child(6n + 2),
+.gal-grid .gal-item:nth-child(6n + 3),
+.gal-grid .gal-item:nth-child(6n + 5),
+.gal-grid .gal-item:nth-child(6n + 6){grid-column:span 1}
+.gal-grid .gal-item:nth-child(6n + 1) img,
+.gal-grid .gal-item:nth-child(6n + 4) img{aspect-ratio:16/10}
 @media(max-width:600px){.gal-grid{grid-template-columns:repeat(2,1fr)}.gal-wide{grid-column:span 2}}
 
 /* ===== VIDEO ===== */
