@@ -33,8 +33,18 @@ img{display:block;max-width:100%;height:auto}
 .hide{display:none!important}
 .wrap{max-width:960px;margin:0 auto;padding:0 24px}
 section{position:relative;padding:100px 0;overflow:hidden}
-#video.video-footer-section{overflow:visible;padding-bottom:0}
-#video.video-footer-section > .wrap{padding-bottom:4px}
+#video.video-footer-section{
+  overflow:visible;
+  padding-top:56px;
+  padding-bottom:0;
+}
+#video.video-footer-section > .wrap{
+  min-height:calc(100dvh - 90px);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding-bottom:8px;
+}
 
 /* ===== ENVELOPE SCREEN ===== */
 #envelope-screen{
@@ -307,7 +317,12 @@ section{position:relative;padding:100px 0;overflow:hidden}
 
 /* ===== HERO ===== */
 #hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:0}
-.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .1s ease-out}
+.hero-bg{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;
+  object-position:center 24%;
+  transition:transform .1s ease-out;
+}
 .hero-overlay{position:absolute;inset:0;background:rgba(255,242,240,.82)}
 #petals{position:absolute;inset:0;pointer-events:none;z-index:1}
 .hero-content{position:relative;z-index:2;text-align:center;padding:40px 20px}
@@ -620,7 +635,10 @@ section{position:relative;padding:100px 0;overflow:hidden}
 #video{background:var(--cream)}
 .video-wrapper{max-width:720px;margin:20px auto 0;overflow:visible}
 .video-container{
-  position:relative;width:100%;aspect-ratio:16/9;
+  position:relative;
+  width:min(100%, calc((100dvh - 250px) * 16 / 9));
+  margin:0 auto;
+  aspect-ratio:16/9;
   border-radius:16px;overflow:hidden;
   box-shadow:0 12px 40px rgba(199,107,130,.12);
   border:2px solid var(--gold-l);
@@ -650,6 +668,17 @@ section{position:relative;padding:100px 0;overflow:hidden}
 .video-fb-overlay p{
   font-family:var(--body);font-size:15px;color:var(--white);
   font-style:italic;letter-spacing:1px;
+}
+
+@media(max-width:768px){
+  #video.video-footer-section{padding-top:40px}
+  #video.video-footer-section > .wrap{
+    min-height:calc(100dvh - 82px);
+    justify-content:flex-start;
+  }
+  .video-container{
+    width:min(100%, calc((100dvh - 220px) * 16 / 9));
+  }
 }
 
 /* ===== GIFT BOX ===== */
