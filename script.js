@@ -337,6 +337,8 @@ function openInvitation() {
   }, 1800);
 
   // Bước 5: Init còn lại
+  // Preload ảnh ở section Couple để tránh khựng ngay lần cuộn đầu tới đây.
+  preloadEarlySectionMedia();
   setTimeout(() => startCountdown(), 2200);
   setTimeout(() => initParallax(), 2300);
   setTimeout(() => initNavDots(), 2400);
@@ -344,6 +346,18 @@ function openInvitation() {
   setTimeout(() => initFloatingHearts(), 2600);
   setTimeout(() => initBackToTop(), 2700);
   setTimeout(() => initFloatWishes(), 2800);
+}
+
+function preloadEarlySectionMedia() {
+  const earlyImages = [
+    'assets/images/couple/groom.jpg',
+    'assets/images/couple/bride.jpg',
+  ];
+  earlyImages.forEach((src) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+  });
 }
 
 function burstHearts() {
