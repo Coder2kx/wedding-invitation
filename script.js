@@ -981,6 +981,43 @@ let lastTouchPauseAt = 0;
 /** px mỗi frame (~60fps). Thấp = cuộn chậm, dễ xem ảnh / đọc chữ */
 const AUTO_SPEED = 1;
 
+function getViewportHeight() {
+  if (window.visualViewport && window.visualViewport.height) {
+    return window.visualViewport.height;
+  }
+  return window.innerHeight;
+}
+
+function getMaxScrollY() {
+  const doc = document.documentElement;
+  const body = document.body;
+  const totalHeight = Math.max(
+    doc.scrollHeight,
+    doc.offsetHeight,
+    doc.clientHeight,
+    body ? body.scrollHeight : 0,
+    body ? body.offsetHeight : 0
+  );
+  return Math.max(0, totalHeight - getViewportHeight());
+}
+
+function getFloatingUiInset() {
+  const bottomBar = document.getElementById('bottom-bar');
+  if (!bottomBar || bottomBar.classList.contains('hide')) return 24;
+  return Math.max(24, bottomBar.getBoundingClientRect().height + 24);
+}
+
+function getAutoScrollEndY() {
+  const pageMax = getMaxScrollY();
+  const videoContainer = document.getElementById('video-container');
+  if (!videoContainer) return pageMax;
+  const rect = videoContainer.getBoundingClientRect();
+  const videoBottomY = window.scrollY + rect.bottom;
+  const viewportUsable = Math.max(1, getViewportHeight() - getFloatingUiInset());
+  const videoStopY = Math.max(0, videoBottomY - viewportUsable);
+  return Math.min(pageMax, videoStopY);
+}
+
 async function requestAutoWakeLock() {
   try {
     if (!('wakeLock' in navigator)) return;
@@ -1023,9 +1060,10 @@ function startAutoScroll() {
 
   function tick() {
     if (!autoScrollRunning) return;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    if (maxScroll <= 0 || window.scrollY >= maxScroll - 2) {
-      // Chạm đáy: dừng cuộn nhưng giữ wake lock để tránh tắt màn hình.
+    const endY = getAutoScrollEndY();
+    if (endY <= 0 || window.scrollY >= endY - 2) {
+      // Dừng tại vị trí xem trọn khung video (không trôi xuống footer).
+      window.scrollTo({ top: endY, behavior: 'auto' });
       pauseAutoScroll({ releaseWakeLock: false });
       return;
     }
@@ -1064,8 +1102,8 @@ function initBackToTop() {
   const topBtn = document.querySelector('.bb-top');
   if (!topBtn) return;
   window.addEventListener('scroll', function() {
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    if (window.scrollY >= maxScroll - 100) {
+    const endY = getAutoScrollEndY();
+    if (window.scrollY >= endY - 100) {
       topBtn.classList.add('visible');
     } else {
       topBtn.classList.remove('visible');
@@ -1080,9 +1118,9 @@ function toggleAutoScroll() {
     // Mobile thường phát sinh touchmove nhỏ ngay sau tap nút; bỏ qua để không pause tức thì.
     ignoreManualStopUntil = Date.now() + 700;
     clearReplayScrollTimer();
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    // Nút scroll phải luôn phản hồi ngay: ở đáy thì nhảy về đầu và chạy tiếp.
-    if (maxScroll > 0 && window.scrollY >= maxScroll - 2) {
+    const endY = getAutoScrollEndY();
+    // Khi đang ở điểm kết thúc thì nhảy về đầu và chạy lại ngay.
+    if (endY > 0 && window.scrollY >= endY - 2) {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
     startAutoScroll();

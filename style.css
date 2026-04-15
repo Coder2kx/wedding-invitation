@@ -39,11 +39,11 @@ section{position:relative;padding:100px 0;overflow:hidden}
   padding-bottom:0;
 }
 #video.video-footer-section > .wrap{
-  min-height:calc(100dvh - 90px);
+  min-height:auto;
   display:flex;
   flex-direction:column;
-  justify-content:center;
-  padding-bottom:8px;
+  justify-content:flex-start;
+  padding-bottom:28px;
 }
 
 /* ===== ENVELOPE SCREEN ===== */
@@ -673,7 +673,7 @@ section{position:relative;padding:100px 0;overflow:hidden}
 @media(max-width:768px){
   #video.video-footer-section{padding-top:40px}
   #video.video-footer-section > .wrap{
-    min-height:calc(100dvh - 82px);
+    min-height:auto;
     justify-content:flex-start;
   }
   .video-container{
