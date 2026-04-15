@@ -302,6 +302,7 @@ function playEnvelopeOpenSound() {
 
 function openInvitation() {
   playEnvelopeOpenSound();
+  tryPlayWeddingVideo();
 
   const envelope = document.getElementById('envelope-screen');
   const main = document.getElementById('main');
@@ -330,6 +331,7 @@ function openInvitation() {
     envelope.classList.add('out');
     envelope.style.display = 'none';
     document.body.style.overflow = 'auto';
+    tryPlayWeddingVideo();
     burstMusicNotes();
     tryPlayMusic();
     initReveal();
@@ -1180,6 +1182,19 @@ function initAutoScroll() {
 }
 
 // ===== VIDEO FALLBACK + viewport autoplay (muted, không trùng nhạc nền) =====
+function tryPlayWeddingVideo() {
+  const video = document.getElementById('wedding-video');
+  if (!video) return;
+  video.muted = true;
+  video.defaultMuted = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  const playPromise = video.play();
+  if (playPromise && typeof playPromise.catch === 'function') {
+    playPromise.catch(() => {});
+  }
+}
+
 function initVideoFallback() {
   const video = document.getElementById('wedding-video');
   const container = document.getElementById('video-container');
@@ -1187,13 +1202,16 @@ function initVideoFallback() {
   if (!video || !container || !fallback) return;
   // Cố định chế độ inline trên mobile Safari/Android WebView.
   video.muted = true;
+  video.defaultMuted = true;
   video.autoplay = true;
   video.playsInline = true;
   video.setAttribute('playsinline', '');
+  video.setAttribute('muted', '');
   video.setAttribute('webkit-playsinline', 'true');
   video.setAttribute('x5-playsinline', 'true');
   video.setAttribute('x5-video-player-type', 'h5');
   video.setAttribute('x5-video-player-fullscreen', 'false');
+  video.setAttribute('preload', 'auto');
 
   // iOS đôi khi vào fullscreen khi user bấm play; ép quay về inline.
   video.addEventListener('webkitbeginfullscreen', () => {
@@ -1203,6 +1221,8 @@ function initVideoFallback() {
   video.addEventListener('play', () => {
     try { if (video.webkitDisplayingFullscreen && video.webkitExitFullscreen) video.webkitExitFullscreen(); } catch (e) { /* ignore */ }
   });
+  video.addEventListener('loadedmetadata', tryPlayWeddingVideo);
+  video.addEventListener('canplay', tryPlayWeddingVideo);
 
   video.addEventListener('error', function() {
     container.classList.add('hide');
@@ -1222,7 +1242,7 @@ function initVideoFallback() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            video.play().catch(() => {});
+            tryPlayWeddingVideo();
           } else {
             video.pause();
           }
@@ -1232,6 +1252,17 @@ function initVideoFallback() {
     );
     io.observe(container);
   }
+
+  // Một số mobile chỉ cho autoplay ổn định sau tương tác đầu tiên của người dùng.
+  const unlockAutoplay = () => {
+    tryPlayWeddingVideo();
+    window.removeEventListener('pointerdown', unlockAutoplay, true);
+    window.removeEventListener('touchend', unlockAutoplay, true);
+    window.removeEventListener('click', unlockAutoplay, true);
+  };
+  window.addEventListener('pointerdown', unlockAutoplay, { capture: true, passive: true });
+  window.addEventListener('touchend', unlockAutoplay, { capture: true, passive: true });
+  window.addEventListener('click', unlockAutoplay, { capture: true, passive: true });
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -1240,6 +1271,7 @@ document.addEventListener('visibilitychange', () => {
     return;
   }
   if (keepAutoWakeLock) requestAutoWakeLock();
+  tryPlayWeddingVideo();
 });
 
 // ===== INIT =====
